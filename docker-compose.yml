@@ -3,26 +3,50 @@ version: '3.8'
 services:
   prometheus:
     image: prom/prometheus
+    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
+    networks:
+      - monitor
+
+  pushgateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
+    networks:
+      - monitor
 
   grafana:
     image: grafana/grafana
+    container_name: grafana
     ports:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - monitor
+
 
   node_exporter:
     image: prom/node-exporter
+    container_name: node_exporter
     ports:
       - "9100:9100"
+    networks:
+      - monitor
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: cadvisor
     ports:
       - "8080:8080"
     volumes:
@@ -30,7 +54,12 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitor
 
 volumes:
   prometheus-data:
   grafana-data:
+
+networks:
+  monitor:

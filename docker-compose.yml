@@ -11,7 +11,14 @@ services:
       - prometheus-data:/prometheus
     networks:
       - monitor
-
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - alertmanager_config:/etc/alertmanager
+      - alertmanager_data:/alertmanager
   pushgateway:
     image: prom/pushgateway
     container_name: pushgateway
